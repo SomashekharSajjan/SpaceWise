@@ -1,16 +1,7 @@
-import axios from "axios";
+import api from "./api";
 
 export const getGmailCategories = async () => {
-  const token = localStorage.getItem("token");
-
-  const response = await axios.get(
-    "/api/gmail/categories",
-    {
-      headers: {
-        Authorization: token,
-      },
-    }
-  );
+  const response = await api.get("/gmail/categories");
 
   return response.data.labels || [];
 };

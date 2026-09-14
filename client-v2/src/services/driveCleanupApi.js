@@ -1,30 +1,15 @@
-import axios from "axios";
-
-const API_URL =
-  "/api/drive";
+import api from "./api";
 
 // ==========================================
 // DELETE / MOVE DRIVE FILES TO TRASH
 // ==========================================
 
-export const deleteDriveFiles = async (
-  fileIds
-) => {
-  const token =
-    localStorage.getItem("token");
-
-  const response = await axios.delete(
-    `${API_URL}/files`,
-    {
-      data: {
-        fileIds,
-      },
-
-      headers: {
-        Authorization: token,
-      },
-    }
-  );
+export const deleteDriveFiles = async (fileIds) => {
+  const response = await api.delete("/drive/files", {
+    data: {
+      fileIds,
+    },
+  });
 
   return response.data;
 };
@@ -33,23 +18,10 @@ export const deleteDriveFiles = async (
 // RESTORE DRIVE FILES
 // ==========================================
 
-export const restoreDriveFiles = async (
-  fileIds
-) => {
-  const token =
-    localStorage.getItem("token");
-
-  const response = await axios.post(
-    `${API_URL}/files/restore`,
-    {
-      fileIds,
-    },
-    {
-      headers: {
-        Authorization: token,
-      },
-    }
-  );
+export const restoreDriveFiles = async (fileIds) => {
+  const response = await api.post("/drive/files/restore", {
+    fileIds,
+  });
 
   return response.data;
 };
