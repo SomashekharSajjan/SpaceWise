@@ -2,6 +2,10 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
+    // ==========================================
+    // USER INFORMATION
+    // ==========================================
+
     name: {
       type: String,
       required: true,
@@ -11,6 +15,13 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
+    },
+
+    // Google unique user ID
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
     },
 
     profilePicture: {
@@ -23,10 +34,37 @@ const userSchema = new mongoose.Schema(
       default: "google",
     },
 
-    // Store Google Access Token
+    // ==========================================
+    // GOOGLE OAUTH TOKENS
+    // ==========================================
+
     accessToken: {
       type: String,
       default: "",
+    },
+
+    refreshToken: {
+      type: String,
+      default: "",
+    },
+
+    // ==========================================
+    // GOOGLE AI PRO
+    // ==========================================
+    // IMPORTANT:
+    // This must only be set to true when the
+    // user's actual AI Pro subscription is
+    // confirmed.
+    // ==========================================
+
+    googleAiPro: {
+      type: Boolean,
+      default: false,
+    },
+
+    googleAiProExpiry: {
+      type: Date,
+      default: null,
     },
   },
   {
@@ -34,4 +72,7 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model(
+  "User",
+  userSchema
+);
