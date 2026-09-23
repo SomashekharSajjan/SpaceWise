@@ -263,7 +263,7 @@ function Login() {
   // ==========================================
 
   return (
-    <div
+    <main
       style={{
         minHeight: "100vh",
         background: "#0b0b0d",
@@ -339,7 +339,7 @@ function Login() {
           </p>
         )}
       </div>
-    </div>
+    </main>
   );
 }
 
