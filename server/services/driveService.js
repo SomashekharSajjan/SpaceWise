@@ -463,7 +463,8 @@ const getDriveFiles = async (
 
 const getDriveAnalytics = async (
   accessToken,
-  refreshToken
+  refreshToken,
+  includeDuplicates = false
 ) => {
   const drive =
     createDriveClient(
@@ -671,6 +672,14 @@ const oldFiles =
   // DUPLICATE SCAN
   // ==========================================================
 
+  let allDuplicateGroups = [];
+  let ownedDuplicates = [];
+  let sharedDuplicates = [];
+  let mixedDuplicates = [];
+  let duplicateCopies = 0;
+
+  if (includeDuplicates) {
+
   console.log(
     "===================================="
   );
@@ -771,12 +780,12 @@ const oldFiles =
   // DUPLICATE GROUPS
   // ==========================================================
 
-  const ownedDuplicates = [];
-  const sharedDuplicates = [];
-  const mixedDuplicates = [];
+    ownedDuplicates = [];
+    sharedDuplicates = [];
+    mixedDuplicates = [];
 
   // This contains EVERY duplicate group
-  const allDuplicateGroups = [];
+    allDuplicateGroups = [];
 
   Object.entries(
     contentHashMap
@@ -936,8 +945,8 @@ const oldFiles =
   // DUPLICATE COPY COUNT
   // ==========================================================
 
-  const duplicateCopies =
-    allDuplicateGroups.reduce(
+    duplicateCopies =
+      allDuplicateGroups.reduce(
       (total, group) => {
         return (
           total +
@@ -984,6 +993,8 @@ const oldFiles =
   console.log(
     "===================================="
   );
+
+  }
 
   // ==========================================================
   // RECENT FILES

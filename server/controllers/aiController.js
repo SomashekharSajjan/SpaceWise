@@ -26,7 +26,8 @@ const storageHealth = async (req, res) => {
     // Use both access token and refresh token
     const analytics = await getDriveAnalytics(
       user.accessToken,
-      user.refreshToken
+      user.refreshToken,
+      true
     );
 
     const duplicateFiles =
