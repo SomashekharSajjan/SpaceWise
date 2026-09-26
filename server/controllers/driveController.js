@@ -183,9 +183,13 @@ const driveAnalytics = async (
       });
     }
 
+    const includeDuplicates =
+      req.query.duplicates === "true";
+
     const analytics = await getDriveAnalytics(
       user.accessToken,
-      user.refreshToken
+      user.refreshToken,
+      includeDuplicates
     );
 
     return res.json({
