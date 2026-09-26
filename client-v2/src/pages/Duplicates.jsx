@@ -37,7 +37,7 @@ function Duplicates() {
     }
 
     const response = await axios.get(
-      "/api/drive/analytics",
+      "/api/drive/analytics?duplicates=true",
       {
         headers: {
           Authorization: token,
