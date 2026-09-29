@@ -631,13 +631,14 @@ function DriveDuplicates() {
           ) : (
 
             <>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 
 
               {/* =================================================
                   MY DUPLICATES
               ================================================= */}
 
-              <section>
+              <section className="overflow-hidden rounded-2xl border border-emerald-500/20 bg-white/[0.015]">
 
                 <div className="flex items-center justify-between border-b border-white/10 p-5">
 
@@ -813,7 +814,7 @@ function DriveDuplicates() {
                   SHARED DUPLICATES
               ================================================= */}
 
-              <section>
+              <section className="overflow-hidden rounded-2xl border border-amber-500/20 bg-white/[0.015]">
 
                 <div className="flex items-center justify-between border-b border-white/10 p-5">
 
@@ -967,12 +968,12 @@ function DriveDuplicates() {
 
                 )}
 
-              </section>
+                          </section>
+          </div>
 
-
-              {/* =================================================
-                  MIXED DUPLICATES
-              ================================================= */}
+          {/* =================================================
+              MIXED DUPLICATES
+          ================================================= */}
 
               <section>
 
