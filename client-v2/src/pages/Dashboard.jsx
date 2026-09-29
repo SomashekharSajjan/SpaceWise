@@ -621,19 +621,7 @@ function Dashboard() {
 
   const smartRecommendations = [];
 
-  if (largestFileCount > 0) {
-    smartRecommendations.push({
-      key: "large-files",
-      title: "Review large files",
-      description: `${largestFileCount} large file${
-        largestFileCount === 1 ? "" : "s"
-      } are consuming more Drive space than usual.`,
-      action: "Review large files",
-      icon: Database,
-      color: "#fbbf24",
-      onClick: () => navigate("/drive-cleanup"),
-    });
-  }
+
 
   if (duplicateFileCount > 0) {
     smartRecommendations.push({
