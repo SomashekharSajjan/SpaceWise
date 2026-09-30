@@ -651,18 +651,7 @@ function Dashboard() {
     });
   }
 
-  if (healthScore > 0 && healthScore < 80) {
-    smartRecommendations.push({
-      key: "health",
-      title: "Improve storage health",
-      description:
-        "SpaceWise detected areas that could be improved. Review the AI health suggestions above.",
-      action: "View health",
-      icon: ShieldCheck,
-      color: "#38bdf8",
-      onClick: () => scrollToId("storage-overview"),
-    });
-  }
+  
 
   const visibleSmartRecommendations =
     smartRecommendations.slice(0, 3);
