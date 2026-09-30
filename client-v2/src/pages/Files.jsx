@@ -165,7 +165,7 @@ function Files() {
       }
 
       const response = await axios.get(
-        `${API_URL}/api/drive/files/list?limit=100`,
+       `${API_URL}/api/drive/files/list`,
         {
           headers: {
             Authorization: token,
