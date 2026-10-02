@@ -423,39 +423,54 @@ const getDriveFiles = async (
     refreshToken
   );
 
-  const safeLimit = Math.min(
-    Math.max(Number(limit) || 100, 1),
-    100
+  let files = [];
+  let pageToken = null;
+
+  // Fetch all pages instead of stopping at the first 100 files.
+  do {
+    const response = await drive.files.list({
+      pageSize: 1000,
+
+      pageToken,
+
+      q: "trashed = false",
+
+      spaces: "drive",
+
+      orderBy: "modifiedTime desc",
+
+      fields:
+        "nextPageToken,files(" +
+        "id," +
+        "name," +
+        "size," +
+        "mimeType," +
+        "modifiedTime," +
+        "md5Checksum," +
+        "ownedByMe," +
+        "owners(displayName,emailAddress)," +
+        "webViewLink," +
+        "webContentLink," +
+        "capabilities(canTrash,canDownload)" +
+        ")",
+
+    });
+
+    files = files.concat(
+      response.data.files || []
+    );
+
+    pageToken =
+      response.data.nextPageToken || null;
+
+  } while (pageToken);
+
+  console.log(
+    "ALL DRIVE FILES RETURNED:",
+    files.length
   );
 
-  const response = await drive.files.list({
-    pageSize: safeLimit,
-
-    q: "trashed = false",
-
-    spaces: "drive",
-
-    orderBy: "modifiedTime desc",
-
-    fields:
-      "files(" +
-      "id," +
-      "name," +
-      "size," +
-      "mimeType," +
-      "modifiedTime," +
-      "md5Checksum," +
-      "ownedByMe," +
-      "owners(displayName,emailAddress)," +
-      "webViewLink," +
-      "webContentLink," +
-      "capabilities(canTrash,canDownload)" +
-      ")",
-  });
-
-  return (response.data.files || []).map(
-    convertDriveFile
-  );
+  return files.map(convertDriveFile);
 };
 // ============================================================
 // GET DRIVE ANALYTICS
