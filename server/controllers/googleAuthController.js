@@ -51,10 +51,9 @@ const googleLogin = async (req, res) => {
       }
     );
 
-    const {
-      access_token,
-      refresh_token,
-    } = tokens;
+   const {
+  access_token,
+} = tokens;
 
     // ========================================================
     // CHECK ACCESS TOKEN
@@ -72,10 +71,9 @@ const googleLogin = async (req, res) => {
     // SET GOOGLE CREDENTIALS
     // ========================================================
 
-    oauth2Client.setCredentials({
-      access_token,
-      refresh_token,
-    });
+   oauth2Client.setCredentials({
+  access_token,
+});
 
     // ========================================================
     // GET GOOGLE USER INFORMATION
@@ -164,11 +162,7 @@ const googleLogin = async (req, res) => {
           profilePicture: picture,
           provider: "google",
 
-          accessToken:
-            access_token,
-
-          refreshToken:
-            refresh_token || "",
+      
 
           // ================================================
           // AI PRO DEFAULT
@@ -218,8 +212,7 @@ const googleLogin = async (req, res) => {
       // ALWAYS UPDATE ACCESS TOKEN
       // ------------------------------------------------------
 
-      user.accessToken =
-        access_token;
+   
 
       // ------------------------------------------------------
       // REFRESH TOKEN
@@ -228,11 +221,7 @@ const googleLogin = async (req, res) => {
       // Therefore don't overwrite the existing one with "".
       // ------------------------------------------------------
 
-      if (refresh_token) {
-        user.refreshToken =
-          refresh_token;
-      }
-
+     
       // ------------------------------------------------------
       // AI PRO VALUES ARE PRESERVED
       // ------------------------------------------------------
@@ -307,6 +296,130 @@ const googleLogin = async (req, res) => {
 // EXPORT
 // ============================================================
 
+// ============================================================
+// CONNECT GMAIL AND GOOGLE DRIVE
+// ============================================================
+
+const connectGoogleServices = async (req, res) => {
+  try {
+    const { code } = req.body;
+
+    if (!code) {
+      return res.status(400).json({
+        success: false,
+        message: "Google authorization code is required",
+      });
+    }
+
+    // Find the logged-in SpaceWise user
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "SpaceWise user not found",
+      });
+    }
+
+    // Exchange authorization code for Google tokens
+    const oauth2Client = new google.auth.OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      "postmessage"
+    );
+
+    const { tokens } = await oauth2Client.getToken(code);
+
+    if (!tokens.access_token) {
+      return res.status(401).json({
+        success: false,
+        message: "Google access token was not received",
+      });
+    }
+
+    oauth2Client.setCredentials(tokens);
+
+    // Verify the Google account
+    const oauth2 = google.oauth2({
+      auth: oauth2Client,
+      version: "v2",
+    });
+
+    const { data } = await oauth2.userinfo.get();
+
+    if (
+      !data.id ||
+      data.id !== user.googleId ||
+      data.email?.toLowerCase() !== user.email.toLowerCase()
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Please connect the same Google account used for SpaceWise login.",
+      });
+    }
+
+    // Check granted Gmail and Drive permissions
+    const tokenInfo = await oauth2Client.getTokenInfo(
+      tokens.access_token
+    );
+
+    const grantedScopes = tokenInfo.scopes || [];
+
+    const requiredScopes = [
+      "https://mail.google.com/",
+      "https://www.googleapis.com/auth/drive",
+    ];
+
+    const missingScopes = requiredScopes.filter(
+      (scope) => !grantedScopes.includes(scope)
+    );
+
+    if (missingScopes.length > 0) {
+      return res.status(403).json({
+        success: false,
+        message: "Both Gmail and Google Drive permissions are required.",
+        missingScopes,
+      });
+    }
+
+    // Require a refresh token for a new connection
+    if (!tokens.refresh_token && !user.refreshToken) {
+      return res.status(400).json({
+        success: false,
+        message: "Google did not provide a refresh token. Please reconnect with consent.",
+      });
+    }
+
+    // Save Google service tokens
+    user.accessToken = tokens.access_token;
+
+    if (tokens.refresh_token) {
+      user.refreshToken = tokens.refresh_token;
+    }
+
+    await user.save();
+
+    return res.json({
+      success: true,
+      message: "Gmail and Google Drive connected successfully.",
+    });
+
+  } catch (error) {
+    console.error("Google Services Connection Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to connect Google services.",
+      error: error.message,
+    });
+  }
+};
+
+// ============================================================
+// EXPORT
+// ============================================================
+
 module.exports = {
   googleLogin,
+  connectGoogleServices,
 };
