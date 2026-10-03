@@ -10,6 +10,7 @@ const {
   gmailMessages,
   gmailMoveToTrash,
   gmailPermanentDelete,
+  gmailRestore,
 } = require("../controllers/gmailController");
 
 // Gmail Profile
@@ -52,6 +53,12 @@ router.delete(
   "/permanent-delete",
   verifyToken,
   gmailPermanentDelete
+);
+// Restore Gmail emails from Trash
+router.post(
+  "/restore",
+  verifyToken,
+  gmailRestore
 );
 
 module.exports = router;

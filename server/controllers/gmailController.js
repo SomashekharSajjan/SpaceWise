@@ -7,6 +7,7 @@ const {
   getGmailMessages,
   moveEmailsToTrash,
   permanentlyDeleteEmails,
+  restoreEmailsFromTrash,
 } = require("../services/gmailService");
 
 // ==========================================
@@ -424,6 +425,63 @@ const gmailPermanentDelete = async (
   }
 };
 
+const gmailRestore = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (!user.accessToken) {
+      return res.status(401).json({
+        success: false,
+        message: "Google access token not found",
+      });
+    }
+
+    const { messageIds } = req.body;
+
+    if (!Array.isArray(messageIds) || messageIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No email IDs were provided",
+      });
+    }
+
+    const result = await restoreEmailsFromTrash(
+      user.accessToken,
+      user.refreshToken,
+      messageIds
+    );
+
+    return res.json({
+      success: result.restoredCount > 0,
+      message:
+        result.restoredCount > 0
+          ? `${result.restoredCount} email${
+              result.restoredCount === 1 ? "" : "s"
+            } restored successfully.`
+          : "No emails were restored.",
+      restoredCount: result.restoredCount,
+      failed: result.failed || [],
+    });
+  } catch (err) {
+    console.error("Gmail Restore Error:", err);
+
+    return res.status(500).json({
+      success: false,
+      message:
+        err.response?.data?.error?.message ||
+        err.message,
+    });
+  }
+};
+
+
 // ==========================================
 // Export Controllers
 // ==========================================
@@ -434,4 +492,5 @@ module.exports = {
   gmailMessages,
   gmailMoveToTrash,
   gmailPermanentDelete,
+  gmailRestore,
 };

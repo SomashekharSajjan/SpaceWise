@@ -455,6 +455,87 @@ const moveEmailsToTrash = async (
     failed,
   };
 };
+
+// ==========================================
+// Restore Gmail Emails from Trash
+// ==========================================
+const restoreEmailsFromTrash = async (
+  accessToken,
+  refreshToken,
+  messageIds
+) => {
+  const gmail = createGmailClient(
+    accessToken,
+    refreshToken
+  );
+
+  if (
+    !Array.isArray(messageIds) ||
+    messageIds.length === 0
+  ) {
+    throw new Error(
+      "No email IDs were provided"
+    );
+  }
+
+  let restoredCount = 0;
+  const failed = [];
+
+  for (const messageId of messageIds) {
+    try {
+      console.log(
+        "RESTORING GMAIL MESSAGE:",
+        messageId
+      );
+
+      await gmail.users.messages.untrash({
+        userId: "me",
+        id: messageId,
+      });
+
+      const after =
+        await gmail.users.messages.get({
+          userId: "me",
+          id: messageId,
+          format: "metadata",
+        });
+
+      if (
+        !after.data.labelIds?.includes("TRASH")
+      ) {
+        restoredCount++;
+
+        console.log(
+          "SUCCESS - MESSAGE RESTORED:",
+          messageId
+        );
+      } else {
+        failed.push({
+          id: messageId,
+          reason: "TRASH label is still present",
+        });
+      }
+    } catch (err) {
+      console.error(
+        "FAILED TO RESTORE MESSAGE:",
+        messageId,
+        err.message
+      );
+
+      failed.push({
+        id: messageId,
+        reason: err.message,
+      });
+    }
+  }
+
+  return {
+    success: restoredCount > 0,
+    restoredCount,
+    failed,
+  };
+};
+
 // ==========================================
 // Permanently Delete Emails
 // ==========================================
@@ -621,6 +702,7 @@ module.exports = {
   getGmailCategories,
   getLargestAttachments,
   getGmailMessages,
-  moveEmailsToTrash,
-  permanentlyDeleteEmails,
+ moveEmailsToTrash,
+permanentlyDeleteEmails,
+restoreEmailsFromTrash,
 };
