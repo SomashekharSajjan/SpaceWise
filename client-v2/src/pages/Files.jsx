@@ -1044,8 +1044,7 @@ function Files() {
 
                     {/* DELETE */}
 
-                    {file.ownedByMe &&
-                      file.canTrash !== false && (
+                    {file.canTrash === true && (
                         <button
                           type="button"
                           onClick={() =>
@@ -1209,7 +1208,7 @@ function Files() {
 
 {/* DELETE */}
 
-{previewFile.ownedByMe && (
+{previewFile.canTrash === true && (
   <button
     type="button"
     onClick={() => {
