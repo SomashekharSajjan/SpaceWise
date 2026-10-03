@@ -341,9 +341,8 @@ const convertDriveFile = (file) => {
     // PERMISSION
     // ========================================
 
-    canTrash:
-      file.ownedByMe === true &&
-      file.capabilities?.canTrash === true,
+   canTrash:
+  file.capabilities?.canTrash === true,
 
     canDownload:
       file.capabilities
@@ -1166,25 +1165,6 @@ const deleteDriveFiles = async (
         continue;
       }
 
-      // ======================================================
-      // NOT OWNED BY USER
-      // ======================================================
-
-      if (
-        file.ownedByMe !== true
-      ) {
-        failed.push({
-          id: fileId,
-
-          name:
-            file.name,
-
-          reason:
-            "File is owned by someone else.",
-        });
-
-        continue;
-      }
 
       // ======================================================
       // CANNOT TRASH
