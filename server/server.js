@@ -3,6 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const path = require("path");
 
 const userRoutes = require("./routes/userRoutes");
 const googleAuthRoutes = require("./routes/googleAuthRoutes");
@@ -15,6 +16,11 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Google Search Console verification
+app.get("/google5345ea0ca8568457.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "google5345ea0ca8568457.html"));
+});
 
 // Routes
 app.use("/api/users", userRoutes);
