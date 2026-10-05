@@ -7,6 +7,7 @@ import {
   Loader2,
   Mail,
   Trash2,
+  RotateCcw,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -46,6 +47,8 @@ function GmailCleanup() {
 
   const [deleting, setDeleting] =
     useState(false);
+    const [restoring, setRestoring] =
+  useState(false);
 
   const [error, setError] =
     useState("");
@@ -543,6 +546,107 @@ function GmailCleanup() {
     };
 
   // ==========================================
+  // RESTORE EMAILS FROM TRASH
+  // ==========================================
+
+  const handleRestore = async () => {
+    if (
+      selected.length === 0 ||
+      restoring ||
+      deleting
+    ) {
+      return;
+    }
+
+    try {
+      setRestoring(true);
+      setError("");
+      setSuccess("");
+
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        navigate("/login", {
+          replace: true,
+        });
+        return;
+      }
+
+      const response = await axios.post(
+        `${API_URL}/api/gmail/restore`,
+        {
+          messageIds: selected,
+        },
+        {
+          headers: {
+            Authorization: token,
+          },
+        }
+      );
+
+      console.log(
+        "GMAIL RESTORE RESPONSE:",
+        response.data
+      );
+
+      const restoredCount =
+        response.data?.restoredCount || 0;
+
+      if (restoredCount > 0) {
+        const failedIds = (
+          response.data?.failed || []
+        ).map((item) => item.id);
+
+        // Remove only successfully restored emails.
+        setMessages((previous) =>
+          previous.filter(
+            (message) =>
+              !selected.includes(message.id) ||
+              failedIds.includes(message.id)
+          )
+        );
+
+        setSelected([]);
+
+        setSuccess(
+          `${restoredCount} email${
+            restoredCount === 1 ? "" : "s"
+          } restored successfully.`
+        );
+      } else {
+        setError(
+          response.data?.message ||
+            "No emails were restored."
+        );
+      }
+    } catch (err) {
+      console.error(
+        "Gmail Restore Error:",
+        err
+      );
+
+      if (err.response?.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        navigate("/login", {
+          replace: true,
+        });
+
+        return;
+      }
+
+      setError(
+        err.response?.data?.message ||
+          "Unable to restore emails."
+      );
+    } finally {
+      setRestoring(false);
+    }
+  };
+
+
+  // ==========================================
   // MOVE NORMAL EMAILS TO TRASH
   // ==========================================
 
@@ -769,70 +873,89 @@ function GmailCleanup() {
 
             <div className="flex items-center gap-3">
 
-              {type ===
-              "trash" ? (
-                <button
-                  onClick={() => {
-                    const confirmed = window.confirm(
-                      `Are you sure you want to permanently delete ${
-                        selected.length
-                      } email${
-                        selected.length === 1 ? "" : "s"
-                      }?\\n\\nThis action cannot be undone.`
-                    );
+              
+{type === "trash" ? (
+  <>
+    {/* RESTORE SELECTED EMAILS */}
 
-                    if (confirmed) {
-                      handlePermanentDelete();
-                    }
-                  }}
-                  disabled={
-                    selected.length ===
-                      0 ||
-                    deleting
-                  }
-                  className="inline-flex items-center gap-2 rounded-lg bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-40"
-                >
+    <button
+      onClick={handleRestore}
+      disabled={
+        selected.length === 0 ||
+        restoring ||
+        deleting
+      }
+      className="inline-flex items-center gap-2 rounded-lg bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-400 transition hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      {restoring ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        <RotateCcw className="h-4 w-4" />
+      )}
 
-                  {deleting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="h-4 w-4" />
-                  )}
+      Restore Selected
 
-                  Permanently Delete
+      {selected.length > 0 &&
+        ` (${selected.length})`}
+    </button>
 
-                  {selected.length >
-                    0 &&
-                    ` (${selected.length})`}
+    {/* PERMANENT DELETE */}
 
-                </button>
-              ) : (
-                <button
-                  onClick={
-                    handleMoveToTrash
-                  }
-                  disabled={
-                    selected.length ===
-                      0 ||
-                    deleting
-                  }
-                  className="inline-flex items-center gap-2 rounded-lg bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-40"
-                >
+    <button
+      onClick={() => {
+        const confirmed = window.confirm(
+          `Are you sure you want to permanently delete ${
+            selected.length
+          } email${
+            selected.length === 1 ? "" : "s"
+          }?\n\nThis action cannot be undone.`
+        );
 
-                  {deleting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="h-4 w-4" />
-                  )}
+        if (confirmed) {
+          handlePermanentDelete();
+        }
+      }}
+      disabled={
+        selected.length === 0 ||
+        deleting ||
+        restoring
+      }
+      className="inline-flex items-center gap-2 rounded-lg bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      {deleting ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        <Trash2 className="h-4 w-4" />
+      )}
 
-                  Move to Trash
+      Permanently Delete
 
-                  {selected.length >
-                    0 &&
-                    ` (${selected.length})`}
+      {selected.length > 0 &&
+        ` (${selected.length})`}
+    </button>
+  </>
+) : (
+  <button
+    onClick={handleMoveToTrash}
+    disabled={
+      selected.length === 0 ||
+      deleting
+    }
+    className="inline-flex items-center gap-2 rounded-lg bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-40"
+  >
+    {deleting ? (
+      <Loader2 className="h-4 w-4 animate-spin" />
+    ) : (
+      <Trash2 className="h-4 w-4" />
+    )}
 
-                </button>
-              )}
+    Move to Trash
+
+    {selected.length > 0 &&
+      ` (${selected.length})`}
+  </button>
+)}
+
 
             </div>
 

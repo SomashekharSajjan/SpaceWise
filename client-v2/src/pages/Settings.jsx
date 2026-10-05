@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
+
 import {
   ArrowLeft,
   Bell,
@@ -9,9 +11,13 @@ import {
   User,
   Settings as SettingsIcon,
 } from "lucide-react";
+const API_URL = "";
 
 function Settings() {
   const navigate = useNavigate();
+  const [connectingGoogle, setConnectingGoogle] = useState(false);
+const [googleMessage, setGoogleMessage] = useState("");
+const [googleConnected, setGoogleConnected] = useState(false);
 
   const [notifications, setNotifications] = useState(
     localStorage.getItem("spacewiseNotifications") !== "false"
@@ -39,6 +45,76 @@ function Settings() {
     localStorage.removeItem("spacewiseRecentlyCleaned");
     window.location.reload();
   };
+  const connectGoogleServices = () => {
+  setGoogleMessage("");
+
+  if (!window.google?.accounts?.oauth2) {
+    setGoogleMessage("Google sign-in is not loaded. Please refresh the page.");
+    return;
+  }
+
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    navigate("/login");
+    return;
+  }
+
+  const codeClient = window.google.accounts.oauth2.initCodeClient({
+    client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+    scope: [
+      "openid",
+      "email",
+      "profile",
+      "https://mail.google.com/",
+      "https://www.googleapis.com/auth/drive",
+    ].join(" "),
+    prompt: "consent",
+    access_type: "offline",
+    ux_mode: "popup",
+
+    callback: async (response) => {
+      if (!response.code) {
+        setGoogleMessage("Google authorization was not completed.");
+        setConnectingGoogle(false);
+        return;
+      }
+
+      try {
+        const result = await axios.post(
+          `${API_URL}/api/auth/connect-google-services`,
+          { code: response.code },
+          {
+            headers: {
+              Authorization: token,
+            },
+          }
+        );
+
+        setGoogleConnected(true);
+        setGoogleMessage(
+          result.data.message || "Gmail and Google Drive connected!"
+        );
+      } catch (error) {
+        setGoogleMessage(
+          error.response?.data?.message ||
+          "Unable to connect Google services. Please try again."
+        );
+      } finally {
+        setConnectingGoogle(false);
+      }
+    },
+
+    error_callback: (error) => {
+      console.error("Google connection error:", error);
+      setGoogleMessage("Google connection was cancelled or failed.");
+      setConnectingGoogle(false);
+    },
+  });
+
+  setConnectingGoogle(true);
+  codeClient.requestCode();
+};
 
   return (
     <div className="min-h-screen bg-[#09090b] text-white">
@@ -108,9 +184,25 @@ function Settings() {
                   Google account connection used by SpaceWise.
                 </p>
 
-                <div className="mt-4 rounded-xl border border-emerald-400/10 bg-emerald-400/[0.03] px-4 py-3 text-sm text-emerald-400">
-                  Google account connected
-                </div>
+                <div className="mt-4 space-y-3">
+  <button
+    onClick={connectGoogleServices}
+    disabled={connectingGoogle}
+    className="w-full rounded-xl bg-sky-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-50"
+  >
+    {connectingGoogle
+      ? "Connecting Google services..."
+      : googleConnected
+      ? "Reconnect Gmail & Drive"
+      : "Connect Gmail & Drive"}
+  </button>
+
+  {googleMessage && (
+    <p className="text-sm text-zinc-400">
+      {googleMessage}
+    </p>
+  )}
+</div>
               </div>
 
             </div>
