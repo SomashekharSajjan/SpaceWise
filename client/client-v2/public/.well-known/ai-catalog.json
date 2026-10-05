@@ -1,0 +1,15 @@
+{
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "SpaceWise"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:spacewise-one.vercel.app:website:spacewise",
+      "displayName": "SpaceWise Website",
+      "type": "text/html",
+      "url": "https://spacewise-one.vercel.app/",
+      "description": "SpaceWise smart storage management website for Gmail and Google Drive."
+    }
+  ]
+}

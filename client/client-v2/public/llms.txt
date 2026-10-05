@@ -1,0 +1,21 @@
+# SpaceWise
+
+SpaceWise is a smart storage management application that helps users manage and clean up Gmail and Google Drive storage.
+
+## Main Pages
+
+- [SpaceWise Home](https://spacewise-one.vercel.app/)
+- [SpaceWise Login](https://spacewise-one.vercel.app/login)
+
+## Features
+
+- Gmail storage analysis and cleanup
+- Google Drive storage analysis
+- Duplicate file detection
+- Drive trash management
+- Storage analytics
+- AI-powered organization
+
+## Website
+
+- [SpaceWise](https://spacewise-one.vercel.app/)
