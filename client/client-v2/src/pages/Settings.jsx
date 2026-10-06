@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -11,13 +11,11 @@ import {
   User,
   Settings as SettingsIcon,
 } from "lucide-react";
+
 const API_URL = "";
 
 function Settings() {
   const navigate = useNavigate();
-  const [connectingGoogle, setConnectingGoogle] = useState(false);
-const [googleMessage, setGoogleMessage] = useState("");
-const [googleConnected, setGoogleConnected] = useState(false);
 
   const [notifications, setNotifications] = useState(
     localStorage.getItem("spacewiseNotifications") !== "false"
@@ -45,80 +43,11 @@ const [googleConnected, setGoogleConnected] = useState(false);
     localStorage.removeItem("spacewiseRecentlyCleaned");
     window.location.reload();
   };
-  const connectGoogleServices = () => {
-  setGoogleMessage("");
-
-  if (!window.google?.accounts?.oauth2) {
-    setGoogleMessage("Google sign-in is not loaded. Please refresh the page.");
-    return;
-  }
-
-  const token = localStorage.getItem("token");
-
-  if (!token) {
-    navigate("/login");
-    return;
-  }
-
-  const codeClient = window.google.accounts.oauth2.initCodeClient({
-    client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-    scope: [
-      "openid",
-      "email",
-      "profile",
-      "https://mail.google.com/",
-      "https://www.googleapis.com/auth/drive",
-    ].join(" "),
-    prompt: "consent",
-    access_type: "offline",
-    ux_mode: "popup",
-
-    callback: async (response) => {
-      if (!response.code) {
-        setGoogleMessage("Google authorization was not completed.");
-        setConnectingGoogle(false);
-        return;
-      }
-
-      try {
-        const result = await axios.post(
-          `${API_URL}/api/auth/connect-google-services`,
-          { code: response.code },
-          {
-            headers: {
-              Authorization: token,
-            },
-          }
-        );
-
-        setGoogleConnected(true);
-        setGoogleMessage(
-          result.data.message || "Gmail and Google Drive connected!"
-        );
-      } catch (error) {
-        setGoogleMessage(
-          error.response?.data?.message ||
-          "Unable to connect Google services. Please try again."
-        );
-      } finally {
-        setConnectingGoogle(false);
-      }
-    },
-
-    error_callback: (error) => {
-      console.error("Google connection error:", error);
-      setGoogleMessage("Google connection was cancelled or failed.");
-      setConnectingGoogle(false);
-    },
-  });
-
-  setConnectingGoogle(true);
-  codeClient.requestCode();
-};
 
   return (
     <div className="min-h-screen bg-[#09090b] text-white">
 
+      {/* HEADER */}
       <header className="border-b border-white/10 bg-[#09090b]/80 backdrop-blur-xl">
         <div className="flex h-16 items-center justify-between px-8">
 
@@ -148,9 +77,11 @@ const [googleConnected, setGoogleConnected] = useState(false);
         </div>
       </header>
 
+      {/* MAIN */}
       <main className="mx-auto max-w-3xl px-6 py-10">
 
         <div className="mb-8">
+
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-zinc-600">
             Preferences
           </p>
@@ -162,13 +93,14 @@ const [googleConnected, setGoogleConnected] = useState(false);
           <p className="mt-2 text-sm text-zinc-500">
             Control how your dashboard and cleanup tools behave.
           </p>
+
         </div>
 
         <div className="space-y-4">
 
-          {/* Account */}
-
+          {/* ACCOUNT */}
           <section className="rounded-2xl border border-white/10 bg-[#111113] p-5">
+
             <div className="flex items-start gap-4">
 
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-400/10 text-sky-400">
@@ -176,41 +108,24 @@ const [googleConnected, setGoogleConnected] = useState(false);
               </div>
 
               <div className="flex-1">
+
                 <h3 className="font-medium">
                   Account
                 </h3>
 
                 <p className="mt-1 text-sm text-zinc-500">
-                  Google account connection used by SpaceWise.
+                  Your SpaceWise account and profile settings.
                 </p>
 
-                <div className="mt-4 space-y-3">
-  <button
-    onClick={connectGoogleServices}
-    disabled={connectingGoogle}
-    className="w-full rounded-xl bg-sky-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-50"
-  >
-    {connectingGoogle
-      ? "Connecting Google services..."
-      : googleConnected
-      ? "Reconnect Gmail & Drive"
-      : "Connect Gmail & Drive"}
-  </button>
-
-  {googleMessage && (
-    <p className="text-sm text-zinc-400">
-      {googleMessage}
-    </p>
-  )}
-</div>
               </div>
 
             </div>
+
           </section>
 
-          {/* Appearance */}
-
+          {/* APPEARANCE */}
           <section className="rounded-2xl border border-white/10 bg-[#111113] p-5">
+
             <div className="flex items-start gap-4">
 
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-400/10 text-violet-400">
@@ -218,6 +133,7 @@ const [googleConnected, setGoogleConnected] = useState(false);
               </div>
 
               <div className="flex-1">
+
                 <h3 className="font-medium">
                   Appearance
                 </h3>
@@ -229,7 +145,9 @@ const [googleConnected, setGoogleConnected] = useState(false);
                 <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.02] p-4">
 
                   <div className="flex items-center justify-between">
+
                     <div>
+
                       <p className="text-sm text-zinc-300">
                         Dark interface
                       </p>
@@ -237,22 +155,26 @@ const [googleConnected, setGoogleConnected] = useState(false);
                       <p className="mt-1 text-xs text-zinc-600">
                         Optimized for the SpaceWise dashboard.
                       </p>
+
                     </div>
 
                     <span className="rounded-full border border-violet-400/20 bg-violet-400/10 px-3 py-1 text-xs text-violet-400">
                       Active
                     </span>
+
                   </div>
 
                 </div>
+
               </div>
 
             </div>
+
           </section>
 
-          {/* Notifications */}
-
+          {/* NOTIFICATIONS */}
           <section className="rounded-2xl border border-white/10 bg-[#111113] p-5">
+
             <div className="flex items-start gap-4">
 
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-400/10 text-amber-400">
@@ -272,6 +194,7 @@ const [googleConnected, setGoogleConnected] = useState(false);
                 <label className="mt-4 flex cursor-pointer items-center justify-between rounded-xl border border-white/10 bg-white/[0.02] p-4">
 
                   <div>
+
                     <p className="text-sm text-zinc-300">
                       Cleanup notifications
                     </p>
@@ -279,6 +202,7 @@ const [googleConnected, setGoogleConnected] = useState(false);
                     <p className="mt-1 text-xs text-zinc-600">
                       Allow SpaceWise to show cleanup reminders.
                     </p>
+
                   </div>
 
                   <input
@@ -295,11 +219,12 @@ const [googleConnected, setGoogleConnected] = useState(false);
               </div>
 
             </div>
+
           </section>
 
-          {/* Safety */}
-
+          {/* SAFETY */}
           <section className="rounded-2xl border border-white/10 bg-[#111113] p-5">
+
             <div className="flex items-start gap-4">
 
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-400/10 text-red-400">
@@ -319,6 +244,7 @@ const [googleConnected, setGoogleConnected] = useState(false);
                 <label className="mt-4 flex cursor-pointer items-center justify-between rounded-xl border border-white/10 bg-white/[0.02] p-4">
 
                   <div>
+
                     <p className="text-sm text-zinc-300">
                       Confirm before deleting
                     </p>
@@ -326,6 +252,7 @@ const [googleConnected, setGoogleConnected] = useState(false);
                     <p className="mt-1 text-xs text-zinc-600">
                       Ask for confirmation before moving files to Trash.
                     </p>
+
                   </div>
 
                   <input
@@ -342,11 +269,12 @@ const [googleConnected, setGoogleConnected] = useState(false);
               </div>
 
             </div>
+
           </section>
 
-          {/* Local history */}
-
+          {/* LOCAL HISTORY */}
           <section className="rounded-2xl border border-red-400/10 bg-red-400/[0.02] p-5">
+
             <div className="flex items-start gap-4">
 
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-400/10 text-red-400">
@@ -374,11 +302,13 @@ const [googleConnected, setGoogleConnected] = useState(false);
               </div>
 
             </div>
+
           </section>
 
         </div>
 
       </main>
+
     </div>
   );
 }

@@ -229,7 +229,7 @@ function Dashboard() {
   // =======================================================
 
   const [gmail, setGmail] = useState(null);
-  const [drive, setDrive] = useState(null);
+const [drive, setDrive] = useState(null);
 
   // Lightweight recent files for the My Files widget.
   // This is intentionally separate from the heavy Drive analytics request.
@@ -237,6 +237,7 @@ function Dashboard() {
 
   const [health, setHealth] = useState(null);
   const [labels, setLabels] = useState([]);
+  
 
   // Google AI Pro detection:
   // A 5 TB Drive quota is used as the signal for the AI Pro
@@ -264,14 +265,9 @@ function Dashboard() {
   const [showLogoutConfirm, setShowLogoutConfirm] =
     useState(false);
 
-  const [gmailLoading, setGmailLoading] =
-    useState(true);
-
-  const [driveLoading, setDriveLoading] =
-    useState(true);
-
-  const [healthLoading, setHealthLoading] =
-    useState(true);
+  const [gmailLoading, setGmailLoading] = useState(true);
+const [driveLoading, setDriveLoading] = useState(true);
+const [healthLoading, setHealthLoading] = useState(true);
 
   // =======================================================
   // DYNAMIC GREETING
@@ -450,13 +446,14 @@ function Dashboard() {
       }
     };
 
-    loadGmail();
-    loadDrive();
-    loadRecentDriveFiles();
-    loadHealth();
-    loadGmailCategories();
-    loadTrashCount();
-  }, []);
+   loadGmail();
+loadDrive();
+loadRecentDriveFiles();
+loadHealth();
+loadGmailCategories();
+loadTrashCount();
+
+}, []);
 
   // =======================================================
   // MOVE RECENT FILE TO TRASH
@@ -812,6 +809,7 @@ function Dashboard() {
       <main className="relative min-h-screen lg:ml-[72px]">
 
         <div className="mx-auto w-full max-w-[1500px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+       
 
           {/* =================================================
               HEADER
