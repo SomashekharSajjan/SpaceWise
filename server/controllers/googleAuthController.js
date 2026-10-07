@@ -154,27 +154,20 @@ const googleLogin = async (req, res) => {
     // ========================================================
 
     if (!user) {
-      user =
-        await User.create({
-          name,
-          email,
-          googleId,
-          profilePicture: picture,
-          provider: "google",
+     user = await User.create({
+  name,
+  email,
+  googleId,
+  profilePicture: picture,
+  provider: "google",
 
-      
+  // Save Google service tokens during login
+  accessToken: tokens.access_token,
+  refreshToken: tokens.refresh_token || null,
 
-          // ================================================
-          // AI PRO DEFAULT
-          // ================================================
-          // New users are NOT automatically marked as
-          // Google AI Pro users.
-          // ================================================
-
-          googleAiPro: false,
-
-          googleAiProExpiry: null,
-        });
+  googleAiPro: false,
+  googleAiProExpiry: null,
+});
 
       console.log(
         "New Google user created:",
@@ -207,7 +200,16 @@ const googleLogin = async (req, res) => {
       }
 
       user.provider = "google";
+// Always update Google access token
+if (tokens.access_token) {
+  user.accessToken = tokens.access_token;
+}
 
+// Google may not return a refresh token every time.
+// Keep the existing refresh token if a new one isn't returned.
+if (tokens.refresh_token) {
+  user.refreshToken = tokens.refresh_token;
+}
       // ------------------------------------------------------
       // ALWAYS UPDATE ACCESS TOKEN
       // ------------------------------------------------------

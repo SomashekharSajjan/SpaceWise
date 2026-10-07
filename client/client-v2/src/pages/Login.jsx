@@ -31,11 +31,12 @@ function Login() {
       codeClientRef.current =
         window.google.accounts.oauth2.initCodeClient({
           client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-
-          scope: [
+scope: [
   "openid",
   "email",
   "profile",
+  "https://mail.google.com/",
+  "https://www.googleapis.com/auth/drive",
 ].join(" "),
 
           prompt: "consent",
