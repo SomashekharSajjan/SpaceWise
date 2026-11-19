@@ -1,3 +1,4 @@
+
 const User = require("../models/User");
 const { getDriveAnalytics } = require("../services/driveService");
 
@@ -6,7 +7,6 @@ const { getDriveAnalytics } = require("../services/driveService");
 // ==========================================
 const storageHealth = async (req, res) => {
   try {
-    // Get logged-in user
     const user = await User.findById(req.user.id);
 
     if (!user) {
@@ -23,55 +23,36 @@ const storageHealth = async (req, res) => {
       });
     }
 
-    // Use both access token and refresh token
+    // Fetch lightweight Drive analytics.
+    // Do not run the expensive duplicate scan here.
     const analytics = await getDriveAnalytics(
       user.accessToken,
       user.refreshToken,
-      true
+      false
     );
 
-    const duplicateFiles =
-      analytics?.duplicateFiles || [];
-
-    const largestFiles =
-      analytics?.largestFiles || [];
-
-    const videos =
-      Number(analytics?.videos || 0);
-
-    const images =
-      Number(analytics?.images || 0);
-
-    const storageUsedMB =
-      Number(analytics?.storageUsedMB || 0);
+    const largestFiles = analytics?.largestFiles || [];
+    const videos = Number(analytics?.videos || 0);
+    const images = Number(analytics?.images || 0);
+    const storageUsedMB = Number(analytics?.storageUsedMB || 0);
 
     const suggestions = [];
 
-    // Duplicate files
-    if (duplicateFiles.length > 0) {
-      suggestions.push(
-        `You have ${duplicateFiles.length} duplicate file groups to review.`
-      );
-    }
-
-    // Largest file
     if (largestFiles.length > 0) {
       suggestions.push(
         `Largest file: ${largestFiles[0].name || "Unknown file"}`
       );
     }
 
-    // Videos vs images
     if (videos > images) {
       suggestions.push(
         "Videos occupy more space than images in your Google Drive."
       );
     }
 
-    // Storage usage
     if (storageUsedMB > 8000) {
       suggestions.push(
-        "Your Drive storage usage is high. Consider reviewing large files and duplicates."
+        "Your Drive storage usage is high. Consider reviewing large files."
       );
     } else if (storageUsedMB > 5000) {
       suggestions.push(
@@ -79,24 +60,19 @@ const storageHealth = async (req, res) => {
       );
     }
 
-    // If everything is fine
     if (suggestions.length === 0) {
       suggestions.push(
         "Your Google Drive storage looks healthy."
       );
     }
 
-    // Health score
     const score = Math.max(
-      100 -
-        duplicateFiles.length -
-        Math.floor(storageUsedMB / 1000),
+      100 - Math.floor(storageUsedMB / 1000),
       10
     );
 
-    res.json({
+    return res.json({
       success: true,
-
       health: {
         score,
         suggestions,
@@ -106,7 +82,7 @@ const storageHealth = async (req, res) => {
   } catch (err) {
     console.error("Storage Health Error:", err);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: err.message,
     });
