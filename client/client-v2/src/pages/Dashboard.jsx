@@ -1325,9 +1325,7 @@ loadTrashCount();
 
                 <div className="relative border-b border-white/[0.06] px-5 py-5">
 
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-300/50">
-                    AI insight
-                  </p>
+                  
 
                   <h2 className="mt-1 text-lg font-semibold text-white">
                     Storage health
