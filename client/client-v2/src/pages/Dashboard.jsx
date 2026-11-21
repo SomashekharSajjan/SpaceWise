@@ -1325,17 +1325,17 @@ loadTrashCount();
 
                 <div className="relative border-b border-white/[0.06] px-5 py-5">
 
-                  {/* <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-300/50">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-300/50">
                     AI insight
-                  </p> */}
+                  </p>
 
                   <h2 className="mt-1 text-lg font-semibold text-white">
                     Storage health
                   </h2>
 
-                  {/* <p className="mt-1 text-xs text-zinc-600">
+                  <p className="mt-1 text-xs text-zinc-600">
                     AI-generated overview
-                  </p> */}
+                  </p>
 
                 </div>
 
